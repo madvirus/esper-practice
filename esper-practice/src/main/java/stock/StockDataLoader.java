@@ -31,13 +31,13 @@ public class StockDataLoader {
     }
 
     private List<Stock> parseJson(String jsonData) {
-        List<Stock> stocks = new ArrayList<>(3000);
         ObjectMapper m = new ObjectMapper();
         m.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         try {
             JsonNode rootNode = m.readTree(jsonData);
             JsonNode listNode = rootNode.get("list");
             Iterator<JsonNode> listItems = listNode.elements();
+            List<Stock> stocks = new ArrayList<>(3000);
             while (listItems.hasNext()) {
                 JsonNode listItem = listItems.next();
                 JsonNode itemNode = listItem.get("item");
@@ -47,10 +47,10 @@ public class StockDataLoader {
                     stocks.add(createStock(item));
                 }
             }
+            return stocks;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return stocks;
     }
 
     private String getNodeValue(JsonNode item, String nodeName) {
