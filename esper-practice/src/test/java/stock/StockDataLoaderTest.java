@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -20,43 +19,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class StockDataLoaderTest {
-
-	public class Stock {
-		private String name;
-		private String code;
-		private int cost;
-		private int fluctuation;
-		private double rate;
-
-		public Stock(String name, String code, int cost, int fluctuation, double rate) {
-			this.name = name;
-			this.code = code;
-			this.cost = cost;
-			this.fluctuation = fluctuation;
-			this.rate = rate;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getCode() {
-			return code;
-		}
-
-		public int getCost() {
-			return cost;
-		}
-
-		public int getFluctuation() {
-			return fluctuation;
-		}
-
-		public double getRate() {
-			return rate;
-		}
-
-	}
 
 	@Test
 	public void read() {
@@ -125,7 +87,6 @@ public class StockDataLoaderTest {
 				"http://stock.daum.net/xml/xmlallpanel.daum?stype=P&type=U");
 		try {
 			HttpResponse response = httpClient.execute(getRequest);
-			HttpEntity entity = response.getEntity();
 			BufferedReader br = new BufferedReader(
 					new InputStreamReader((response.getEntity().getContent())));
 			StringBuilder builder = new StringBuilder();
