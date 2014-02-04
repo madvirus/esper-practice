@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
 public class StockDataLoaderTest {
@@ -12,15 +13,15 @@ public class StockDataLoaderTest {
     private final StockDataLoader stockDataLoader = new StockDataLoader();
 
     @Test
-	public void readKospi() {
-		List<Stock> stockList = stockDataLoader.loadKospi();
-		assertThat(stockList.size(), equalTo(885));
-	}
+    public void readKospi() {
+        List<StockTick> stockTickList = stockDataLoader.loadKospi();
+        assertThat(stockTickList.size(), equalTo(885));
+    }
 
     @Test
-	public void readKosdaq() {
-		List<Stock> stockList = stockDataLoader.loadKosdaq();
-		assertThat(stockList.size(), equalTo(2226));
-	}
+    public void readKosdaq() {
+        List<StockTick> stockTickList = stockDataLoader.loadKosdaq();
+        assertThat(stockTickList.size(), greaterThan(2200));
+    }
 
 }
