@@ -42,6 +42,7 @@ public class StockFinder {
             public void update(EventBean[] newEvents, EventBean[] oldEvents) {
                 StockTick tick1 = (StockTick) newEvents[0].get("tick1");
                 StockTick tick2 = (StockTick) newEvents[0].get("tick2");
+//                System.out.println("EPL: " + newEvents.length + ":" + (oldEvents == null ? 0 : oldEvents.length));
                 System.out.printf("EPL: %tM:%<tS.%<tL [%s=%d - %s=%d] \n",
                         new Date(), tick1.getCode(), tick1.getCost(), tick2.getCode(), tick2.getCost());
                 if (listener != null) listener.foundSurgedStock(tick1, tick2);

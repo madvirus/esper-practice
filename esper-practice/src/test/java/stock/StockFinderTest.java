@@ -61,13 +61,13 @@ public class StockFinderTest {
         // 7s   117
 
         final int[][] stocks = new int[][]{
-                {100, 10},
-                {109, 9},
-                {104, 9},
-                {112, 9},
-                {113, 9},
-                {114, 9},
-                {117, 9},
+                {100, 300},
+                {109, 301},
+                {104, 302},
+                {112, 305},
+                {113, 320},
+                {114, 322},
+                {117, 330},
         };
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
