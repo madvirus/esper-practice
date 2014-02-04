@@ -36,15 +36,16 @@ public class StockFinder {
                 "select first(*) as tick1, last(*) as tick2 from "+
                         "StockTick.win:time(5 seconds) " +
                         "group by code " +
-                        "having first(*) != last(*) and (last(cost) - first(cost)) / first(cost) > 0.05");
+                        "having first(*) != last(*) and (last(cost) - first(cost)) / first(cost) > 0.05" +
+                        ""
+        );
         eps.addListener(new UpdateListener() {
             @Override
             public void update(EventBean[] newEvents, EventBean[] oldEvents) {
                 StockTick tick1 = (StockTick) newEvents[0].get("tick1");
                 StockTick tick2 = (StockTick) newEvents[0].get("tick2");
-//                System.out.println("EPL: " + newEvents.length + ":" + (oldEvents == null ? 0 : oldEvents.length));
-                System.out.printf("EPL: %tM:%<tS.%<tL [%s=%d - %s=%d] \n",
-                        new Date(), tick1.getCode(), tick1.getCost(), tick2.getCode(), tick2.getCost());
+                System.out.printf("EPL: %tS.%<tL [%s=%d - %s=%d] %d \n",
+                        new Date(), tick1.getCode(), tick1.getCost(), tick2.getCode(), tick2.getCost(), newEvents.length);
                 if (listener != null) listener.foundSurgedStock(tick1, tick2);
             }
         });

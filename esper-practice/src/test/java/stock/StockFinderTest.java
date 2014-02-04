@@ -38,7 +38,7 @@ public class StockFinderTest {
         stockFinder.setStockFoundListener(listener);
     }
 
-    @Test
+//    @Test
     public void shouldFound() {
         StockTick tick1 = new StockTick("name", "code", 109, 9, 9.0);
         stockFinder.sendStockTick(tick1);
@@ -51,23 +51,14 @@ public class StockFinderTest {
 
     @Test
     public void foundSurgedStock() {
-        // time code1  code2
-        // 1s   100    10
-        // 2s   109    9
-        // 3s   104
-        // 4s   112
-        // 5s   113
-        // 6s   114
-        // 7s   117
-
-        final int[][] stocks = new int[][]{
-                {100, 300},
-                {109, 301},
-                {104, 302},
-                {112, 305},
-                {113, 320},
-                {114, 322},
-                {117, 330},
+        final int[] stocks = new int[]{
+                100, 300,
+                109, 301,
+                104, 302,
+                112, 305,
+                113, 324,
+                120, 323,
+                117, 330
         };
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -75,24 +66,23 @@ public class StockFinderTest {
 
             @Override
             public void run() {
-                System.out.println("[TICK " + idx + "]");
-                if (idx >= stocks.length * 2) {
+                System.out.printf("T%02d: %tS.%<tL\n" , idx, new Date());
+                if (idx >= stocks.length) {
                     idx++;
                     return;
                 }
 
-                int[] stockIdx = stocks[idx / 2];
                 if (idx % 2 == 0) {
-                    System.out.printf("GEN: %tM:%<tS.%<tL %s=%d \n", new Date(), "code1", stockIdx[0]);
-                    stockFinder.sendStockTick(new StockTick("name1", "code1", stockIdx[0], 0, 0));
+                    System.out.printf("GEN: %tS.%<tL %s=%d \n", new Date(), "code1", stocks[idx]);
+                    stockFinder.sendStockTick(new StockTick("name1", "code1", stocks[idx], 0, 0));
                 } else {
-                    System.out.printf("GEN: %tM:%<tS.%<tL %s=%d \n", new Date(), "code2", stockIdx[1]);
-                    stockFinder.sendStockTick(new StockTick("name2", "code2", stockIdx[1], 0, 0));
+                    System.out.printf("GEN: %tS.%<tL %s=%d \n", new Date(), "code2", stocks[idx]);
+                    stockFinder.sendStockTick(new StockTick("name2", "code2", stocks[idx], 0, 0));
                 }
                 idx++;
             }
-        }, 300, 1000);
-
+        }, 500, 1000);
+//        stockFinder.sendStockTick(new StockTick("name1", "code1", stocks[0], 0, 0));
         sleep(16, TimeUnit.SECONDS);
         timer.cancel();
     }
