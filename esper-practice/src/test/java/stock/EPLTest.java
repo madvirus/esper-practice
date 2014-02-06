@@ -4,11 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import com.espertech.esper.client.*;
 import org.junit.Before;
@@ -25,17 +21,17 @@ public class EPLTest {
         //config.addVariable("EVENT_STATE", Integer.class, 2);
         epService = EPServiceProviderManager.getProvider("EPLTest", config);
 
-        EPStatement eps = epService.getEPAdministrator().createEPL(
-                "select s as tick, max(cost) as maxCost from StockTick.win:length(5) s where cost > 2000 group by code");
+        final EPStatement eps = epService.getEPAdministrator().createEPL(
+                "select code, avg(cost) as avg from StockTick.win:time(3 sec) group by code");
         eps.addListener(new UpdateListener() {
             @Override
             public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-                try {
-                    StockTick tick = (StockTick) newEvents[0].get("tick");
-                    int max = (Integer) newEvents[0].get("maxCost");
-                    System.out.printf("UPD: %tS.%<tL %s:%d\n", new Date(), tick.getCode(), max);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                for (EventBean eb : newEvents) {
+                    System.out.printf("UPD\t%tS.%<tL\t%s\t%f\n",
+                            new Date(),
+                            eb.get("code"),
+                            eb.get("avg")
+                    );
                 }
             }
         });
@@ -44,23 +40,27 @@ public class EPLTest {
     @Test
     public void test() {
         sendStockTick(new StockTick("name", "code1", 1000, 0, 0.0));
-        SleepUtil.sleepOneSecond();
+        sendStockTick(new StockTick("name", "code2", 100, 0, 0.0));
+        SleepUtil.sleepMillis(500);
+//        SleepUtil.sleepOneSecond();
         sendStockTick(new StockTick("name", "code1", 2000, 0, 0.0));
         SleepUtil.sleepOneSecond();
         sendStockTick(new StockTick("name", "code1", 3000, 0, 0.0));
+        sendStockTick(new StockTick("name", "code2", 200, 0, 0.0));
         SleepUtil.sleepOneSecond();
         sendStockTick(new StockTick("name", "code1", 4000, 0, 0.0));
         SleepUtil.sleepOneSecond();
         sendStockTick(new StockTick("name", "code1", 5000, 0, 0.0));
         SleepUtil.sleepSeconds(3);
         sendStockTick(new StockTick("name", "code1", 6000, 0, 0.0));
+        sendStockTick(new StockTick("name", "code2", 300, 0, 0.0));
         SleepUtil.sleepOneSecond();
         sendStockTick(new StockTick("name", "code1", 7000, 0, 0.0));
         SleepUtil.sleepOneSecond();
     }
 
     private void sendStockTick(StockTick stockTick) {
-        System.out.printf("GEN: %tS.%<tL %s:%d\n", new Date(), stockTick.getCode(), stockTick.getCost());
+        System.out.printf("GEN\t%tS.%<tL\t%s\t%d\n", new Date(), stockTick.getCode(), stockTick.getCost());
         epService.getEPRuntime().sendEvent(stockTick);
     }
 
