@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import java.util.Date;
 
-public class EPLTest {
+public class EPLOutputTest {
 
     private EPServiceProvider epService;
 
@@ -18,7 +18,8 @@ public class EPLTest {
         epService = EPServiceProviderManager.getProvider("EPLTest", config);
 
         final EPStatement eps = epService.getEPAdministrator().createEPL(
-                "select code, avg(cost) as avg from StockTick.win:time(3 sec) group by code");
+                "select code, avg(cost) as avg from StockTick.win:time(4 sec) group by code output all every 2 seconds "
+        );
         eps.addListener(new UpdateListener() {
             @Override
             public void update(EventBean[] newEvents, EventBean[] oldEvents) {
@@ -53,6 +54,8 @@ public class EPLTest {
         SleepUtil.sleepOneSecond();
         sendStockTick(new StockTick("name", "code1", 7000, 0, 0.0));
         SleepUtil.sleepOneSecond();
+
+        SleepUtil.sleepSeconds(5);
     }
 
     private void sendStockTick(StockTick stockTick) {
