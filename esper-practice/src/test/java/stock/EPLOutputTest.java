@@ -6,16 +6,15 @@ import org.junit.Test;
 
 import java.util.Date;
 
-public class EPLOutputTest {
+public class EPLOutputTest extends EPLTestBase {
 
-    private EPServiceProvider epService;
 
-    @Before
-    public void setup() {
+    @Override
+    protected EPServiceProvider initEPService() {
         Configuration config = new Configuration();
         config.addEventType("StockTick", StockTick.class);
         //config.addVariable("EVENT_STATE", Integer.class, 2);
-        epService = EPServiceProviderManager.getProvider("EPLTest", config);
+        EPServiceProvider epService = EPServiceProviderManager.getProvider("EPLTest", config);
 
         final EPStatement eps = epService.getEPAdministrator().createEPL(
                 "select avg(cost) as avg from StockTick.win:time_batch(3 sec) output after 4 sec snapshot every 1.5 sec"
@@ -27,19 +26,18 @@ public class EPLOutputTest {
             public void update(EventBean[] newEvents, EventBean[] oldEvents) {
                 for (EventBean eb : newEvents) {
                     System.out.printf("UPD\t%5.2f\t%s\t%f\n",
-                            (System.currentTimeMillis() - startTime) / 1000.,
+                            elapsedTime(),
                             "",//eb.get("code"),
                             eb.get("avg")
                     );
                 }
             }
         });
+        return epService;
     }
 
-    private long startTime;
     @Test
     public void test() {
-        startTime = System.currentTimeMillis() - 1000;
         sendStockTick(new StockTick("name", "code1", 1000, 0, 0.0));
         SleepUtil.sleepMillis(500);
         sendStockTick(new StockTick("name", "code2", 100, 0, 0.0));
@@ -63,16 +61,6 @@ public class EPLOutputTest {
     }
 
     private void sendStockTick(StockTick stockTick) {
-        System.out.printf("GEN\t%5.2f\t%s\t%d\n",
-                (System.currentTimeMillis() - startTime) / 1000., stockTick.getCode(), stockTick.getCost());
-        epService.getEPRuntime().sendEvent(stockTick);
+        sendEvent(stockTick);
     }
-
-    private void sleep(long i) {
-        try {
-            Thread.sleep(i);
-        } catch (InterruptedException e) {
-        }
-    }
-
 }

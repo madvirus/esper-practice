@@ -1,17 +1,27 @@
 package stock;
 
 public class SlowResponse {
-    private AccessLog accessLog;
+    private String url;
+    private long responseTime;
 
-    public SlowResponse(AccessLog accessLog) {
-        this.accessLog = accessLog;
+    public SlowResponse(String url, long responseTime) {
+        this.url = url;
+        this.responseTime = responseTime;
     }
 
-    public AccessLog getAccessLog() {
-        return accessLog;
+    public String getUrl() {
+        return url;
     }
 
-    public void setAccessLog(AccessLog accessLog) {
-        this.accessLog = accessLog;
+    public long getResponseTime() {
+        return responseTime;
+    }
+
+    @Override
+    public String toString() {
+        return "SlowResponse[" +
+                "url='" + url + '\'' +
+                ", responseTime=" + responseTime +
+                ']';
     }
 }

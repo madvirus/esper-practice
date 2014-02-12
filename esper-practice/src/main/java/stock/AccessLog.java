@@ -24,4 +24,12 @@ public class AccessLog {
     public void setResponseTime(long responseTime) {
         this.responseTime = responseTime;
     }
+
+    @Override
+    public String toString() {
+        return "AccessLog[" +
+                "url='" + url + '\'' +
+                ", responseTime=" + responseTime +
+                ']';
+    }
 }

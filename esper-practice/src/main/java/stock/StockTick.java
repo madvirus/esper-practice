@@ -37,12 +37,12 @@ public class StockTick {
 
     @Override
     public String toString() {
-        return "StockTick{" +
+        return "StockTick[" +
                 "name='" + name + '\'' +
                 ", code='" + code + '\'' +
                 ", cost=" + cost +
                 ", fluctuation=" + fluctuation +
                 ", rate=" + rate +
-                '}';
+                ']';
     }
 }

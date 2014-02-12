@@ -1,23 +1,20 @@
 package stock;
 
 import com.espertech.esper.client.*;
-import org.junit.Before;
 import org.junit.Test;
 
-public class EPLInsertTest {
+public class EPLInsertTest extends EPLTestBase {
 
-    private EPServiceProvider epService;
-
-    @Before
-    public void setup() {
+    @Override
+    protected EPServiceProvider initEPService() {
         Configuration config = new Configuration();
         config.addEventType("AccessLog", AccessLog.class);
         config.addEventType("SlowResponse", SlowResponse.class);
-        epService = EPServiceProviderManager.getProvider("EPLTest", config);
+        EPServiceProvider epService = EPServiceProviderManager.getProvider("EPLTest", config);
 
         EPStatement eps = epService.getEPAdministrator().createEPL(
-                "insert into SlowResponse (a)" +
-                        "select a from AccessLog a where responseTime > 500"
+                "insert into SlowResponse (url, responseTime)" +
+                        "select url, responseTime from AccessLog where responseTime > 500"
         );
 
         EPStatement eps2 = epService.getEPAdministrator().createEPL(
@@ -27,20 +24,19 @@ public class EPLInsertTest {
             @Override
             public void update(EventBean[] newEvents, EventBean[] oldEvents) {
                 try {
-                int count = ((Number)newEvents[0].get("count")).intValue();
-                System.out.printf("UPD\t%5.2f\t%d\n", (System.currentTimeMillis() - startTime) / 1000.,
-                        count);
-                } catch(Exception e) {
+                    int count = ((Number) newEvents[0].get("count")).intValue();
+                    System.out.printf("UPD\t%5.2f\t%d\n", elapsedTime(),
+                            count);
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
+        return epService;
     }
 
-    private long startTime;
     @Test
     public void test() {
-        startTime = System.currentTimeMillis() - 1000;
         sendAccessLogEvent("http://a.com/a", 1000L);
         SleepUtil.sleepMillis(500);
         sendAccessLogEvent("http://a.com/a", 2000L);
@@ -60,12 +56,8 @@ public class EPLInsertTest {
         SleepUtil.sleepSeconds(5);
     }
 
+
     private void sendAccessLogEvent(String url, long responseTime) {
-        System.out.printf("GEN\t%5.2f\t%s\t%d\n",
-                (System.currentTimeMillis() - startTime) / 1000., url, responseTime);
-        epService.getEPRuntime().getEventSender("AccessLog").sendEvent(new AccessLog(url, responseTime));
-        //epService.getEPRuntime().sendEvent(new AccessLog(url, responseTime));
+        sendEvent(new AccessLog(url, responseTime));
     }
-
-
 }
