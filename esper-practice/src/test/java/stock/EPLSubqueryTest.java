@@ -32,6 +32,20 @@ public class EPLSubqueryTest extends EPLTestBase {
                 }
             }
         });
+
+
+        EPStatement eps2 = epService.getEPAdministrator().createEPL(
+                "select * from SlowResponse.win:time(4 sec) s " +
+                        "where s.responseTime > (select avg(responseTime) from SlowResponse.win:time(2 sec))" +
+                        ""
+        );
+        eps2.addListener(new UpdateListener() {
+            @Override
+            public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+                SlowResponse event = (SlowResponse) newEvents[0].getUnderlying();
+                System.out.printf("SLO\t%5.2f\t%s\n", elapsedTime(), event);
+            }
+        });
         return epService;
     }
 
