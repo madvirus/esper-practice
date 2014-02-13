@@ -1,12 +1,10 @@
-package stock;
+package esper;
 
 import com.espertech.esper.client.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-
-public class EPLJoinTest {
+public class EPLSubqueryTest2 {
 
     private EPServiceProvider epService;
 
@@ -18,31 +16,21 @@ public class EPLJoinTest {
         epService = EPServiceProviderManager.getProvider("EPLTest", config);
 
         EPStatement eps = epService.getEPAdministrator().createEPL(
-                "select rstream v, o "+
-                        "from ProductView.win:time(2 sec) as v "+
-                        "left outer join ProductOrder.win:time(2 sec) as o " +
-                        "on v.productId = o.productId and v.userId = o.userId "+
-                        "where o is null" +
+                "select rstream v " +
+                        "from ProductView.win:time(2 sec) as v " +
+                        "where not exists (select * from ProductOrder.win:time(2 sec) as o where v.productId = o.productId and v.userId = o.userId)" +
                         ""
         );
         eps.addListener(new UpdateListener() {
             @Override
             public void update(EventBean[] newEvents, EventBean[] oldEvents) {
-                if (newEvents != null)
-                    printEvents(newEvents);
-            }
-
-            private void printEvents(EventBean[] newEvents) {
                 try {
                     for (EventBean eb : newEvents) {
                         ProductView pv = (ProductView) eb.get("v");
-                        ProductOrder po = (ProductOrder) eb.get("o");
-                        System.out.printf("UPD\t%5.2f\t%s\t%s\n",
+                        System.out.printf("UPD\t%5.2f\t%s\n",
                                 elapsedTime(),
-                                pv == null ? "null" : pv,
-                                po == null ? "null" : po);
+                                pv);
                     }
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -67,7 +55,7 @@ public class EPLJoinTest {
         SleepUtil.sleepMillis(500);
         sendProductViewEvent("V3", 2L, "user2");
         SleepUtil.sleepMillis(800);
-        //sendProductOrderEvent("O2", 2L, "user2");
+//        sendProductOrderEvent("O2", 2L, "user2");
         SleepUtil.sleepMillis(1500);
         sendProductOrderEvent("O3", 3L, "user3");
     }

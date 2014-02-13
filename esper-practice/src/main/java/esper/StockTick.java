@@ -1,4 +1,4 @@
-package stock;
+package esper;
 
 public class StockTick {
     private String name;

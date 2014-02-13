@@ -1,10 +1,10 @@
-package stock;
+package esper;
 
-public class SlowResponse {
+public class AccessLog {
     private String url;
     private long responseTime;
 
-    public SlowResponse(String url, long responseTime) {
+    public AccessLog(String url, long responseTime) {
         this.url = url;
         this.responseTime = responseTime;
     }
@@ -13,13 +13,21 @@ public class SlowResponse {
         return url;
     }
 
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     public long getResponseTime() {
         return responseTime;
     }
 
+    public void setResponseTime(long responseTime) {
+        this.responseTime = responseTime;
+    }
+
     @Override
     public String toString() {
-        return "SlowResponse[" +
+        return "AccessLog[" +
                 "url='" + url + '\'' +
                 ", responseTime=" + responseTime +
                 ']';

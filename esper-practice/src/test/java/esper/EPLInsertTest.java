@@ -1,16 +1,24 @@
-package stock;
+package esper;
 
 import com.espertech.esper.client.*;
+import org.junit.Before;
 import org.junit.Test;
 
-public class EPLInsertTest extends EPLTestBase {
+import java.util.ArrayList;
+import java.util.List;
 
-    @Override
-    protected EPServiceProvider initEPService() {
+public class EPLInsertTest {
+
+    private EsperRunner esperRunner;
+
+    @Before
+    public void setUp() {
         Configuration config = new Configuration();
         config.addEventType("AccessLog", AccessLog.class);
         config.addEventType("SlowResponse", SlowResponse.class);
         EPServiceProvider epService = EPServiceProviderManager.getProvider("EPLTest", config);
+
+        esperRunner = new EsperRunner(epService);
 
         EPStatement eps = epService.getEPAdministrator().createEPL(
                 "insert into SlowResponse (url, responseTime)" +
@@ -25,39 +33,27 @@ public class EPLInsertTest extends EPLTestBase {
             public void update(EventBean[] newEvents, EventBean[] oldEvents) {
                 try {
                     int count = ((Number) newEvents[0].get("count")).intValue();
-                    System.out.printf("UPD\t%5.2f\t%d\n", elapsedTime(),
+                    System.out.printf("UPD\t%5.2f\t%d\n", esperRunner.elapsedTime(),
                             count);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-        return epService;
     }
 
     @Test
     public void test() {
-        sendAccessLogEvent("http://a.com/a", 1000L);
-        SleepUtil.sleepMillis(500);
-        sendAccessLogEvent("http://a.com/a", 2000L);
-        SleepUtil.sleepMillis(100);
-        sendAccessLogEvent("http://a.com/a", 700L);
+        List<ScheduledEvent> seList = new ArrayList<>();
+        seList.add(new ScheduledEvent(0, new AccessLog("http://a.com/a", 1000L)));
+        seList.add(new ScheduledEvent(500, new AccessLog("http://a.com/a", 2000L)));
+        seList.add(new ScheduledEvent(600, new AccessLog("http://a.com/a", 700L)));
+        seList.add(new ScheduledEvent(1300, new AccessLog("http://a.com/a", 500L)));
+        seList.add(new ScheduledEvent(1700, new AccessLog("http://a.com/a", 900L)));
+        seList.add(new ScheduledEvent(2300, new AccessLog("http://a.com/a", 600L)));
+        seList.add(new ScheduledEvent(2400, new AccessLog("http://a.com/a", 1200L)));
 
-        SleepUtil.sleepMillis(700);
-        sendAccessLogEvent("http://a.com/a", 500L);
-
-        SleepUtil.sleepMillis(400);
-        sendAccessLogEvent("http://a.com/a", 900L);
-
-        SleepUtil.sleepMillis(600);
-        sendAccessLogEvent("http://a.com/a", 600L);
-        SleepUtil.sleepMillis(100);
-        sendAccessLogEvent("http://a.com/a", 1200L);
-        SleepUtil.sleepSeconds(5);
+        esperRunner.startSendingAndSleepAndStop(seList, 5);
     }
 
-
-    private void sendAccessLogEvent(String url, long responseTime) {
-        sendEvent(new AccessLog(url, responseTime));
-    }
 }

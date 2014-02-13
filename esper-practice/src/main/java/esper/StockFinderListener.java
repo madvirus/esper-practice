@@ -1,4 +1,4 @@
-package stock;
+package esper;
 
 public interface StockFinderListener {
     void found(StockTick stockTick);

@@ -1,4 +1,4 @@
-package stock;
+package esper;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 public class StockFinderTest {

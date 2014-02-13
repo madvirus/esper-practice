@@ -1,6 +1,5 @@
-package stock;
+package esper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -14,11 +13,11 @@ public class StockDataLoader {
     private final StockJsonParser stockJsonParser = new StockJsonParser();
 
     public List<StockTick> loadKospi() {
-        return loadAndParseJsonStock("http://stock.daum.net/xml/xmlallpanel.daum?stype=P&type=U");
+        return loadAndParseJsonStock("http://esper.daum.net/xml/xmlallpanel.daum?stype=P&type=U");
     }
 
     public List<StockTick> loadKosdaq() {
-        return loadAndParseJsonStock("http://stock.daum.net/xml/xmlallpanel.daum?stype=Q&type=U");
+        return loadAndParseJsonStock("http://esper.daum.net/xml/xmlallpanel.daum?stype=Q&type=U");
 
     }
 
