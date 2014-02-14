@@ -9,16 +9,19 @@ import java.util.List;
 
 public class EPLJoinTest {
     private EsperRunner esperRunner;
+    private EPServiceProvider epService;
 
     @Before
     public void setup() {
         Configuration config = new Configuration();
         config.addEventType("ProductView", ProductView.class);
         config.addEventType("ProductOrder", ProductOrder.class);
-        EPServiceProvider epService = EPServiceProviderManager.getProvider("EPLTest", config);
-
+        epService = EPServiceProviderManager.getProvider("EPLTest", config);
         esperRunner = new EsperRunner(epService);
+    }
 
+    @Test
+    public void leftOuterJoin() {
         EPStatement eps = epService.getEPAdministrator().createEPL(
                 "select rstream v, o " +
                         "from ProductView.win:time(2 sec) as v " +
@@ -31,29 +34,15 @@ public class EPLJoinTest {
             @Override
             public void update(EventBean[] newEvents, EventBean[] oldEvents) {
                 if (newEvents != null)
-                    printEvents(newEvents);
-            }
-
-            private void printEvents(EventBean[] newEvents) {
-                try {
                     for (EventBean eb : newEvents) {
                         ProductView pv = (ProductView) eb.get("v");
                         ProductOrder po = (ProductOrder) eb.get("o");
-                        System.out.printf("UPD\t%5.2f\t%s\t%s\n",
-                                esperRunner.elapsedTime(),
-                                pv == null ? "null" : pv,
-                                po == null ? "null" : po);
+                        System.out.printf("UPD\t%5.2f\t%s\t%s\n", esperRunner.elapsedTime(),
+                                pv == null ? "null" : pv, po == null ? "null" : po);
                     }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
         });
-    }
 
-    @Test
-    public void test() {
         List<ScheduledEvent> seList = new ArrayList<>();
         seList.add(new ScheduledEvent(0, new ProductView("V1", 1L, "user1")));
         seList.add(new ScheduledEvent(500, new ProductView("V2", 1L, "user1")));
@@ -63,5 +52,7 @@ public class EPLJoinTest {
         seList.add(new ScheduledEvent(3800, new ProductOrder("O3", 3L, "user3")));
 
         esperRunner.startSendingAndSleepAndStop(seList, 5);
+
+        eps.destroy();
     }
 }

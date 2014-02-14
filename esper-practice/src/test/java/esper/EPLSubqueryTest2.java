@@ -4,17 +4,21 @@ import com.espertech.esper.client.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EPLSubqueryTest2 {
 
-    private EPServiceProvider epService;
+    private EsperRunner esperRunner;
 
     @Before
     public void setup() {
         Configuration config = new Configuration();
         config.addEventType("ProductView", ProductView.class);
         config.addEventType("ProductOrder", ProductOrder.class);
-        epService = EPServiceProviderManager.getProvider("EPLTest", config);
 
+        EPServiceProvider epService = EPServiceProviderManager.getProvider("EPLTest", config);
+        esperRunner = new EsperRunner(epService);
         EPStatement eps = epService.getEPAdministrator().createEPL(
                 "select rstream v " +
                         "from ProductView.win:time(2 sec) as v " +
@@ -28,7 +32,7 @@ public class EPLSubqueryTest2 {
                     for (EventBean eb : newEvents) {
                         ProductView pv = (ProductView) eb.get("v");
                         System.out.printf("UPD\t%5.2f\t%s\n",
-                                elapsedTime(),
+                                esperRunner.elapsedTime(),
                                 pv);
                     }
                 } catch (Exception e) {
@@ -38,39 +42,17 @@ public class EPLSubqueryTest2 {
         });
     }
 
-    private double elapsedTime() {
-        return (System.currentTimeMillis() - startTime) / 1000.;
-    }
-
-    private long startTime;
-
     @Test
     public void test() {
-        startTime = System.currentTimeMillis() - 1000;
-        sendProductViewEvent("V1", 1L, "user1");
-        SleepUtil.sleepMillis(500);
-        sendProductViewEvent("V2", 1L, "user1");
-        SleepUtil.sleepMillis(500);
-        sendProductOrderEvent("O1", 1L, "user1");
-        SleepUtil.sleepMillis(500);
-        sendProductViewEvent("V3", 2L, "user2");
-        SleepUtil.sleepMillis(800);
-//        sendProductOrderEvent("O2", 2L, "user2");
-        SleepUtil.sleepMillis(1500);
-        sendProductOrderEvent("O3", 3L, "user3");
-    }
+        List<ScheduledEvent> seList = new ArrayList<>();
+        seList.add(new ScheduledEvent(0, new ProductView("V1", 1L, "user1")));
+        seList.add(new ScheduledEvent(500, new ProductView("V2", 1L, "user1")));
+        seList.add(new ScheduledEvent(1000, new ProductOrder("O1", 1L, "user1")));
+        seList.add(new ScheduledEvent(1500, new ProductView("V3", 2L, "user2")));
+        //seList.add(new ScheduledEvent(2300, new ProductOrder("O2", 2L, "user2")));
+        seList.add(new ScheduledEvent(3800, new ProductView("O3", 3L, "user3")));
 
-    private void sendProductViewEvent(String name, Long id, String userId) {
-        System.out.printf("GEN\t%5.2f\t%S\t%d\t%s\n",
-                elapsedTime(), name, id, userId);
-        epService.getEPRuntime().sendEvent(new ProductView(name, id, userId));
+        esperRunner.startSendingAndSleepAndStop(seList, 4);
     }
-
-    private void sendProductOrderEvent(String name, Long id, String userId) {
-        System.out.printf("GEN\t%5.2f\t%s\t%d\t%s\n",
-                elapsedTime(), name, id, userId);
-        epService.getEPRuntime().sendEvent(new ProductOrder(name, id, userId));
-    }
-
 
 }
