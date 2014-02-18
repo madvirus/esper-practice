@@ -1,14 +1,14 @@
 package esper;
 
-public class SlowResponse extends MonitorResponse {
+public class NormalResponse extends MonitorResponse {
 
-    public SlowResponse(String url, long responseTime) {
+    public NormalResponse(String url, long responseTime) {
         super(url, responseTime);
     }
 
     @Override
     public String toString() {
-        return "SlowResponse[" +
+        return "NormalResponse[" +
                 "url='" + getUrl() + '\'' +
                 ", responseTime=" + getResponseTime() +
                 ']';
