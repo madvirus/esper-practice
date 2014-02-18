@@ -94,18 +94,13 @@ public class EPLPatternTest {
         seList.add(new ScheduledEvent(2000, new MemberList("L3", "bkchoi2")));
         seList.add(new ScheduledEvent(2500, new MemberDetail("D3", "bkchoi")));
 
-        //seList.add(new ScheduledEvent(0, new MemberDetail("D0", "bkchoi")));
-//        seList.add(new ScheduledEvent(500, new MemberDetail("D1", "bkchoi")));
-//        seList.add(new ScheduledEvent(1000, new MemberList("L2", "bkchoi")));
-//        seList.add(new ScheduledEvent(1500, new MemberList("L3", "bkchoi")));
-//        seList.add(new ScheduledEvent(2000, new MemberDetail("D3", "bkchoi")));
-
         esperRunner.startSendingAndSleepAndStop(seList, 3);
 
         eps.destroy();
     }
 
     @Test
+    @Ignore
     public void repeat() {
         EPStatement eps = epService.getEPAdministrator().createEPL(
                 "select s, o from pattern [" +
@@ -135,6 +130,75 @@ public class EPLPatternTest {
         seList.add(new ScheduledEvent(1000, new SlowResponse("/a", 3000)));
         seList.add(new ScheduledEvent(1500, new SlowResponse("/a", 3000)));
         esperRunner.startSendingAndSleepAndStop(seList, 3);
+
+        eps.destroy();
+    }
+
+    @Test
+    @Ignore
+    public void until() {
+        EPStatement eps = epService.getEPAdministrator().createEPL(
+                "select s from pattern [" +
+                        "every ([3:] s=SlowResponse until NormalResponse)" +
+                        "]" +
+                        ""
+        );
+        eps.addListener(new UpdateListener() {
+            @Override
+            public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+                for (EventBean eb : newEvents) {
+                    SlowResponse[] responses = (SlowResponse[]) eb.get("s");
+                    OvertimeResponse[] responses2 = null; // (OvertimeResponse[]) eb.get("o");
+                    System.out.printf("UPD\t%5.2f\t%s\t%s\n",
+                            esperRunner.elapsedTime(),
+                            Arrays.toString(responses),
+                            Arrays.toString(responses2));
+                }
+            }
+        });
+
+        List<ScheduledEvent> seList = new ArrayList<>();
+        seList.add(new ScheduledEvent(0, new SlowResponse("S1", 3000)));
+        seList.add(new ScheduledEvent(300, new OvertimeResponse("O1")));
+        seList.add(new ScheduledEvent(500, new SlowResponse("S2", 3000)));
+        seList.add(new ScheduledEvent(700, new NormalResponse("N1", 1000)));
+        seList.add(new ScheduledEvent(1000, new SlowResponse("S3", 3000)));
+        seList.add(new ScheduledEvent(1500, new SlowResponse("S4", 3000)));
+        seList.add(new ScheduledEvent(1700, new SlowResponse("S5", 3000)));
+        seList.add(new ScheduledEvent(1900, new NormalResponse("N2", 1000)));
+        esperRunner.startSendingAndSleepAndStop(seList, 3);
+
+        eps.destroy();
+    }
+
+    @Test
+    public void timeGuard() {
+        EPStatement eps = epService.getEPAdministrator().createEPL(
+                "select s from pattern [" +
+                        "every (s=SlowResponse -> SlowResponse where timer:within(2 sec))" +
+                        "]" +
+                        ""
+        );
+        eps.addListener(new UpdateListener() {
+            @Override
+            public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+                for (EventBean eb : newEvents) {
+//                    SlowResponse[] responses = (SlowResponse[]) eb.get("s");
+//                    OvertimeResponse[] responses2 = null; // (OvertimeResponse[]) eb.get("o");
+                    System.out.printf("UPD\t%5.2f\t%s\n",
+                            esperRunner.elapsedTime(),
+                            eb.get("s"));
+                }
+            }
+        });
+
+        List<ScheduledEvent> seList = new ArrayList<>();
+        seList.add(new ScheduledEvent(0, new SlowResponse("S1", 3000)));
+        seList.add(new ScheduledEvent(1000, new SlowResponse("S2", 3000)));
+        seList.add(new ScheduledEvent(1500, new SlowResponse("S3", 3000)));
+        seList.add(new ScheduledEvent(4000, new SlowResponse("S4", 3000)));
+        seList.add(new ScheduledEvent(5000, new SlowResponse("S5", 3000)));
+        esperRunner.startSendingAndSleepAndStop(seList, 6);
 
         eps.destroy();
     }
