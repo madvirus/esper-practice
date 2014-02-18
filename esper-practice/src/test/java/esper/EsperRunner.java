@@ -15,7 +15,7 @@ public class EsperRunner {
     }
 
     public void start(List<ScheduledEvent> scheduledEvents) {
-        startTime = System.currentTimeMillis() - 1000;
+        startTime = System.currentTimeMillis();
         timer = new Timer();
         timer.scheduleAtFixedRate(new SendEventTask(scheduledEvents), 0, 100);
     }

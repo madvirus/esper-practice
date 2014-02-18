@@ -175,7 +175,7 @@ public class EPLPatternTest {
     public void timeGuard() {
         EPStatement eps = epService.getEPAdministrator().createEPL(
                 "select s from pattern [" +
-                        "every (s=SlowResponse -> SlowResponse where timer:within(2 sec))" +
+                        "every ((s=SlowResponse -> SlowResponse) where timer:within(2 sec))" +
                         "]" +
                         ""
         );
