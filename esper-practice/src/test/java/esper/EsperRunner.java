@@ -35,7 +35,7 @@ public class EsperRunner {
 
     public void startSendingAndSleepAndStop(List<ScheduledEvent> seList, int sleeptimeInSeconds) {
         start(seList);
-        SleepUtil.sleepSeconds(9);
+        SleepUtil.sleepSeconds(sleeptimeInSeconds);
         stop();
     }
 

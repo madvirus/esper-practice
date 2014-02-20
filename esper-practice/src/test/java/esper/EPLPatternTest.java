@@ -19,6 +19,7 @@ public class EPLPatternTest {
         config.addEventType("List", MemberList.class);
         config.addEventType("Detail", MemberDetail.class);
         config.addEventType("ProductView", ProductView.class);
+        config.addEventType("ProductOrder", ProductOrder.class);
         config.addEventType("IssuedTicket", IssuedTicket.class);
         config.addEventType("Entering", Entering.class);
         config.addEventType("UseTicketCoupon", UseTicketCoupon.class);
@@ -172,10 +173,11 @@ public class EPLPatternTest {
     }
 
     @Test
-    public void timeGuard() {
+    @Ignore
+    public void simpleTimerGuard() {
         EPStatement eps = epService.getEPAdministrator().createEPL(
                 "select s from pattern [" +
-                        "every ((s=SlowResponse -> SlowResponse) where timer:within(2 sec))" +
+                        "(every s=SlowResponse) where timer:within(2 sec)" +
                         "]" +
                         ""
         );
@@ -193,11 +195,75 @@ public class EPLPatternTest {
         });
 
         List<ScheduledEvent> seList = new ArrayList<>();
-        seList.add(new ScheduledEvent(0, new SlowResponse("S1", 3000)));
-        seList.add(new ScheduledEvent(1000, new SlowResponse("S2", 3000)));
+        seList.add(new ScheduledEvent(800, new SlowResponse("S1", 3000)));
+        seList.add(new ScheduledEvent(1500, new SlowResponse("S2", 3000)));
+        seList.add(new ScheduledEvent(1900, new SlowResponse("S3", 3000)));
+        seList.add(new ScheduledEvent(2300, new SlowResponse("S4", 3000)));
+        esperRunner.startSendingAndSleepAndStop(seList, 3);
+
+        eps.destroy();
+
+    }
+
+    @Test
+    @Ignore
+    public void timerGuardWithFollowedBy() {
+        EPStatement eps = epService.getEPAdministrator().createEPL(
+                "select s from pattern [" +
+                        //"every ((s=SlowResponse -> SlowResponse) where timer:within(2 sec))" +
+                        "every s=SlowResponse -> (not OvertimeResponse) where timer:within(1 sec)" +
+                        "]" +
+                        ""
+        );
+        eps.addListener(new UpdateListener() {
+            @Override
+            public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+                for (EventBean eb : newEvents) {
+                    System.out.printf("UPD\t%5.2f\t%s\n",
+                            esperRunner.elapsedTime(),
+                            eb.get("s"));
+                }
+            }
+        });
+
+        List<ScheduledEvent> seList = new ArrayList<>();
+//        seList.add(new ScheduledEvent(0, new SlowResponse("S1", 3000)));
+//        seList.add(new ScheduledEvent(1000, new SlowResponse("S2", 3000)));
         seList.add(new ScheduledEvent(1500, new SlowResponse("S3", 3000)));
+        seList.add(new ScheduledEvent(2700, new OvertimeResponse("O1")));
+
+        seList.add(new ScheduledEvent(3200, new SlowResponse("S3-2", 3000)));
         seList.add(new ScheduledEvent(4000, new SlowResponse("S4", 3000)));
-        seList.add(new ScheduledEvent(5000, new SlowResponse("S5", 3000)));
+        seList.add(new ScheduledEvent(4700, new SlowResponse("S5", 3000)));
+        seList.add(new ScheduledEvent(6100, new SlowResponse("S6", 3000)));
+        esperRunner.startSendingAndSleepAndStop(seList, 6);
+
+        eps.destroy();
+    }
+
+    @Test
+    public void timerInterval() {
+        EPStatement eps = epService.getEPAdministrator().createEPL(
+                "select p from pattern [" +
+                        "every p=ProductView -> timer:interval(1 sec) and not ProductOrder(productId=p.productId and userId=p.userId)" +
+                        "]" +
+                        ""
+        );
+        eps.addListener(new UpdateListener() {
+            @Override
+            public void update(EventBean[] newEvents, EventBean[] oldEvents) {
+                for (EventBean eb : newEvents) {
+                    System.out.printf("UPD\t%5.2f\t%s\n",
+                            esperRunner.elapsedTime(),
+                            eb.get("p"));
+                }
+            }
+        });
+
+        List<ScheduledEvent> seList = new ArrayList<>();
+        seList.add(new ScheduledEvent(1000, new ProductView("V1", 1L, "user1")));
+        seList.add(new ScheduledEvent(1100, new ProductView("V2", 2L, "user2")));
+        seList.add(new ScheduledEvent(1900, new ProductOrder("O2", 2L, "user2")));
         esperRunner.startSendingAndSleepAndStop(seList, 6);
 
         eps.destroy();
