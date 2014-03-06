@@ -6,6 +6,7 @@ public class StockTick {
     private int cost;
     private int fluctuation;
     private double rate;
+    private long accessTime;
 
     public StockTick(String name, String code, int cost, int fluctuation, double rate) {
         this.name = name;
@@ -13,6 +14,15 @@ public class StockTick {
         this.cost = cost;
         this.fluctuation = fluctuation;
         this.rate = rate;
+    }
+
+    public StockTick(String name, String code, int cost, int fluctuation, double rate, long accessTime) {
+        this.name = name;
+        this.code = code;
+        this.cost = cost;
+        this.fluctuation = fluctuation;
+        this.rate = rate;
+        this.accessTime = accessTime;
     }
 
     public String getName() {
@@ -35,6 +45,10 @@ public class StockTick {
         return rate;
     }
 
+    public long getAccessTime() {
+        return accessTime;
+    }
+
     @Override
     public String toString() {
         return "StockTick[" +
@@ -43,6 +57,7 @@ public class StockTick {
                 ", cost=" + cost +
                 ", fluctuation=" + fluctuation +
                 ", rate=" + rate +
+                ", accessTime=" + accessTime +
                 ']';
     }
 }

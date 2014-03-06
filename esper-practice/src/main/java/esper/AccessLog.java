@@ -30,9 +30,10 @@ public class AccessLog {
 
     @Override
     public String toString() {
-        return "AccessLog[" +
+        return "AccessLog{" +
                 "url='" + url + '\'' +
                 ", responseTime=" + responseTime +
-                ']';
+                ", accessTime=" + accessTime +
+                '}';
     }
 }
